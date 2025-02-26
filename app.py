@@ -14,6 +14,12 @@ class CalcInput(Schema):
 class CalcOutput(Schema):
     result = Float()
 
+class ConvertInput(Schema):
+    amount = Float(required=True, example=100.0)
+ 
+class ConvertOutput(Schema):
+    btc_amount = Float()
+
 @app.route('/')
 def hello_world():
     return 'Hello ITCNE24!'
@@ -44,26 +50,34 @@ def calculater(op):
     return jsonify({"result": result})
 
 @app.route('/convert', methods=['GET'])
-def convert_to_btc():
+@app.input(ConvertInput, location="query")  
+@app.output(ConvertOutput)
+def convert_to_btc(query_data):
     try:
-        amount_eur = float(request.args.get('amount', 0))
+        amount_eur = float(query_data.get('amount', 0))
         if amount_eur <= 0:
             return jsonify({"error": "Invalid amount"}), 400
-        
+
         # Abrufen des aktuellen BTC-USD-Kurses
         response = requests.get("https://data-api.coindesk.com/index/cc/v1/latest/tick?market=cadli&instruments=BTC-USD")
-        data = response.json()
-        btc_usd = data['data']['BTC-USD']['last']
+        api_data = response.json()  # JSON-Daten abrufen
         
+        print(api_data)  # Debugging: API-Antwort in der Konsole ausgeben
+
+        # Überprüfen, ob die erwartete Struktur vorhanden ist
+        if "Data" not in api_data or "BTC-USD" not in api_data["Data"] or "VALUE" not in api_data["Data"]["BTC-USD"]:
+            return jsonify({"error": "Unexpected API response", "response": api_data}), 500
+
+        btc_usd = api_data["Data"]["BTC-USD"]["VALUE"]  # Neuer Zugriffspfad!
+
         # Umrechnung von EUR nach USD (angenommener Kurs, könnte durch API ersetzt werden)
         eur_usd = 1.1  # Beispielkurs
         amount_usd = amount_eur * eur_usd
-        
+
         # Umrechnung in BTC
         btc_amount = amount_usd / btc_usd
-        
+
         return jsonify({"amount_eur": amount_eur, "amount_btc": btc_amount})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
