@@ -16,7 +16,8 @@ services:
       - FLASK_PORT=5000
       - FLASK_APP=app
     depends_on:
-      - msvc-db
+      msvc-db:
+        condition: service_healthy
 
   msvc-db:
     image: mysql:8.4.4
@@ -29,10 +30,11 @@ services:
       - 3306:3306
     volumes:
       - my-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   my-db:
-
-
- 
-    
