@@ -1,0 +1,7 @@
+# file: requirements.txt
+
+apiflask==2.3.2
+mysql-connector-python==9.2.0
+flask-sqlalchemy==3.1.1s
+
+

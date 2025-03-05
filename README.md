@@ -117,6 +117,35 @@ Tests sind wichtig für stabile APIs. **TDD (Test-Driven Development)** bedeutet
 
 Es gibt nicht **die eine** richtige Methode für API-Entwicklung, aber **Konsistenz, Modularität, Dokumentation und Tests** sind essenziell.  
 Durch die Befolgung dieser Best Practices kann man **effizienter APIs entwickeln und deren Qualität steigern**. 🚀
-```
 
-Dieses Markdown-Format kann direkt in einem Markdown-Editor oder GitHub verwendet werden. 🎯
+Dieses Markdown-Format kann direkt in einem Markdown-Editor oder GitHub verwendet werden.
+
+# CRUD
+
+Die CRUD-Operationen (Create, Read, Update, Delete) sind grundlegende Funktionen beim Aufbau von APIs, die es ermöglichen, Daten zu erstellen, abzurufen, zu aktualisieren und zu löschen. Diese vier Operationen sind oft notwendig, um ein vollständiges und benutzbares Modell zu schaffen. Wenn eine Aktion nicht durch eine dieser vier Operationen beschrieben werden kann, sollte sie möglicherweise als eigenes Modell betrachtet werden.
+
+Im Zusammenhang mit REST-APIs entsprechen CRUD-Operationen oft den HTTP-Methoden POST (Create), GET (Read), PUT (Update) und DELETE (Delete). Dies sind fundamentale Elemente für ein persistenten Speichersystem.
+
+Beispiel eines RESTful Systems für ein Restaurantmenü:
+- Create: Um ein neues Gericht hinzuzufügen, wird eine POST-Anforderung verwendet. Der Server antwortet mit einem HTTP-Code 201 (Created).
+- Read: Mit GET wird die gesamte Liste von Gerichten oder ein spezifisches Gericht abgerufen, ohne dass Daten verändert werden. Erfolgreiche Anfragen erhalten den Statuscode 200 (OK).
+- Update: PUT wird verwendet, um ein Gericht zu aktualisieren, wie z. B. eine Preisänderung. Der Server antwortet mit 200 (OK).
+- Delete: Mit DELETE wird ein Gericht aus dem Menü entfernt. Der Server antwortet mit 204 (No Content), ohne eine Antwort im Body zu liefern.
+
+CRUD-Operationen bieten eine einfache und klare Struktur für die Entwicklung und Verwaltung von APIs und Datenbanken.
+
+CRUD ist eine Abkürzung aus dem Datenmanagement und steht für die vier grundlegenden Operationen in Datenbanken: **Create** (Erstellen), **Read** (Lesen), **Update** (Aktualisieren) und **Delete** (Löschen). Diese Funktionen ermöglichen die Verwaltung von Daten in persistenten Datenbanken.
+
+Einsatzzweck:
+- Datenbank-Experten nutzen CRUD-Operationen, um Datenbankprobleme zu beheben oder Daten zu bereinigen.
+- Endanwender verwenden CRUD, um beispielsweise Konten zu erstellen, zu ändern oder zu löschen.
+
+CRUD dient auch als eine Checkliste für Entwickler, um sicherzustellen, dass ein Anwendungsmodell alle vier Operationen unterstützt. Wenn eine Aktion nicht durch CRUD beschrieben werden kann, sollte ein eigenes Modell entwickelt werden.
+
+Sprachumgebungen: CRUD wird in verschiedenen Programmiersprachen und Plattformen verwendet, z. B. Java, JavaScript, PHP, .NET und Python. In SQL entsprechen die CRUD-Operationen den Befehlen `INSERT`, `SELECT`, `UPDATE` und `DELETE`. Bei RESTful HTTP sind es `POST`, `GET`, `PUT` und `DELETE`.
+
+CRUD-Frameworks: Diese Frameworks ermöglichen es, Datenbankobjekte über eine grafische Oberfläche darzustellen und zu bearbeiten. Sie sind besonders in Mehrbenutzersystemen nützlich, da mehrere Benutzer gleichzeitig Daten einsehen können. 
+
+Anwendungsbeispiel: Eine einfache Aufgabenlisten-App verwendet CRUD, um Aufgaben hinzuzufügen, anzuzeigen, zu ändern und zu löschen.
+
+Nachteile und Grenzen: CRUD ist oft zu einfach, um komplexere Anforderungen abzubilden. Beispielsweise werden gelöschte oder aktualisierte Daten nicht automatisch historisiert, was in einigen Anwendungen problematisch sein kann. Diese Einschränkungen können durch zusätzliche Felder oder Tabellen zur Speicherung von Änderungen behoben werden.
