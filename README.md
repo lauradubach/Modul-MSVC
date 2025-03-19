@@ -159,3 +159,61 @@ Nachteile und Grenzen: CRUD ist oft zu einfach, um komplexere Anforderungen abzu
 Test suite starten:
 `docker compose -f compose.test.yaml up --build`
 
+# Image verkleinern
+
+## Noch kleineres Docker-Image mit Multi-Stage Build:
+```dockerfile
+# STAGE 1: Build-Umgebung
+FROM python:3.10.10-alpine AS builder
+
+WORKDIR /app
+
+# Installiere nur PIP, um das Image klein zu halten
+RUN apk add --no-cache gcc musl-dev libffi-dev
+
+# Kopiere nur die Requirements und installiere Abhängigkeiten
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt && \
+    pip install --no-cache-dir --prefix=/install gunicorn
+
+# STAGE 2: Minimales Laufzeit-Image
+FROM python:3.10.10-alpine
+
+WORKDIR /app
+
+# Kopiere nur die benötigten Dateien aus der Build-Stage
+COPY --from=builder /install /usr/local
+COPY . .
+
+# Exponiere den Port für Flask
+EXPOSE 5000
+
+# Starte den Gunicorn-Server
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "wsgi:app"]
+```
+
+---
+
+## Optimierungen und Einsparungen:
+1. **Multi-Stage Build:**  
+   - Die Abhängigkeiten werden in einer separaten "Builder"-Stage installiert.  
+   - Dadurch bleiben keine Compiler- und Build-Tools im finalen Image übrig.  
+
+2. **Kleinste Basis (`alpine`)**:  
+   - `python:3.10.10-alpine` ist viel schlanker als `slim-buster`.  
+
+3. **Nur benötigte Systempakete (`apk add`)**:  
+   - `gcc`, `musl-dev`, `libffi-dev` sind nur in der **Build-Stage** nötig, verschwinden aber im finalen Image.  
+
+4. **`--no-cache-dir` für PIP**:  
+   - Spart weiteren Speicher, da PIP keinen Cache speichert.  
+
+5. **Kein `ADD . /app` mehr**:  
+   - Stattdessen **`COPY . .`**, um unnötige Dateien zu vermeiden.  
+
+### **Erwartete Einsparung**:
+- Das Original-Image (`python:3.10.10-slim-buster`) hat **~35-40 MB**.  
+- Mit `alpine` und Multi-Stage könnte das finale Image nur **10-15 MB** groß sein.  
+
+Falls du noch mehr Platz sparen willst, kannst du in `requirements.txt` prüfen, ob unnötige Abhängigkeiten entfernt werden können.
+
