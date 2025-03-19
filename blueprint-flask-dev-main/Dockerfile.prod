@@ -1,15 +1,23 @@
-# Verwende ein noch schlankeres Basis-Image
-FROM python:3.10.10-alpine
+# STAGE 1: Build-Umgebung
+FROM python:3.10.10-alpine AS builder
 
-# Setze das Arbeitsverzeichnis
 WORKDIR /app
 
-# Kopiere und installiere Abhängigkeiten in einem Schritt (reduziert Layer)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir gunicorn
+# Installiere nur PIP, um das Image klein zu halten
+RUN apk add --no-cache gcc musl-dev libffi-dev
 
-# Kopiere den restlichen Code
+# Kopiere nur die Requirements und installiere Abhängigkeiten
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt && \
+    pip install --no-cache-dir --prefix=/install gunicorn
+
+# STAGE 2: Minimales Laufzeit-Image
+FROM python:3.10.10-alpine
+
+WORKDIR /app
+
+# Kopiere nur die benötigten Dateien aus der Build-Stage
+COPY --from=builder /install /usr/local
 COPY . .
 
 # Exponiere den Port für Flask
