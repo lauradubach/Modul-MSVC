@@ -2,7 +2,6 @@ from apiflask import APIFlask
 
 from config import Config
 from app.extensions import db
-from test.create_test_data import create_test_data
 from flask_migrate import Migrate
 
 def create_app(config_class=Config):
@@ -23,8 +22,6 @@ def create_app(config_class=Config):
     # Datenbanktabellen anlegen
     with app.app_context():
         db.create_all()
-        create_test_data()  ## diese Zeile auskommentieren, wenn man keine Testdaten braucht
-
 
     @app.route('/')
     def test_page():
