@@ -1,0 +1,41 @@
+services:
+
+  msvc-bp-dev-api:
+    container_name: msvc-bp-dev-api
+    build:
+      context: .
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URI=mysql+mysqlconnector://root:root@msvc-bp-dev-db:3306/msvc-dev
+      - CHOKIDAR_USEPOLLING=true
+      - FLASK_DEBUG=1
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+      - FLASK_APP=app
+    depends_on:
+      msvc-bp-dev-db:
+        condition: service_healthy
+
+  msvc-bp-dev-db:
+    image: mysql:8.4.4
+    container_name: msvc-bp-dev-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: msvc-dev
+    healthcheck:
+      test: mysqladmin ping -h localhost -uroot --password=$$MYSQL_ROOT_PASSWORD
+      start_period: 2s
+      interval: 5s
+      timeout: 5s
+      retries: 55
+    ports:
+      - 3306:3306
+    volumes:
+      - msvc-dev-db:/var/lib/mysql
+
+volumes:
+  msvc-dev-db:

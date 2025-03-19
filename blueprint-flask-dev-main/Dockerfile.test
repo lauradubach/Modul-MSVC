@@ -1,0 +1,25 @@
+# File: Dockerfile.test
+
+# Base python package
+FROM python:3.10.10-slim-buster
+
+# Working directory
+WORKDIR /app
+
+# Copy the dependencies file
+COPY requirements.txt requirements.txt
+
+# Install the dependencies
+RUN pip install -r requirements.txt
+
+# Install Test Framework
+RUN pip install pytest responses pytest-cov
+
+# for flask web server
+EXPOSE 5000
+
+# add files
+ADD . /app
+
+# This is the runtime command for the container
+CMD [ "python3", "-m" , "pytest", "--cov=app"]
