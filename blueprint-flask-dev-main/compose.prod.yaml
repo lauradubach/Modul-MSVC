@@ -1,0 +1,38 @@
+# File: compose.prod.yaml
+
+services:
+
+  msvc-bp-prod-api:
+    image: ${FLASK_BLUEPRINT_IMAGE}
+    build:
+      context: .
+      dockerfile: 'Dockerfile.prod'
+    container_name: msvc-bp-prod-api
+    environment:
+      - DATABASE_URI=mysql+mysqlconnector://root:root@msvc-bp-prod-db:3306/msvc-prod
+    ports:
+      - 5000:5000
+    depends_on:
+      msvc-bp-prod-db:
+        condition: service_healthy
+
+  msvc-bp-prod-db:
+    image: mysql:8.4.4
+    container_name: msvc-bp-prod-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: msvc-prod
+    healthcheck:
+      test: mysqladmin ping -h localhost -uroot --password=$$MYSQL_ROOT_PASSWORD
+      start_period: 2s
+      interval: 5s
+      timeout: 5s
+      retries: 55
+    ports:
+      - 3306:3306
+    volumes:
+      - msvc-prod-db:/var/lib/mysql
+
+volumes:
+  msvc-prod-db:
