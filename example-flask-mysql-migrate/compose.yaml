@@ -1,0 +1,41 @@
+services:
+
+  persistent-flask:
+    container_name: persistent_flask_service
+    build:
+      context: .
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URI=mysql+mysqlconnector://root:root@msvc-db:3306/msvc
+      - CHOKIDAR_USEPOLLING=true
+      - FLASK_DEBUG=1
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+      - FLASK_APP=app
+    depends_on:
+      msvc-db:
+        condition: service_healthy
+
+  msvc-db:
+    image: mysql:8.4.4
+    container_name: msvc-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: msvc
+    healthcheck:
+      test: mysqladmin ping -h localhost -uroot --password=$$MYSQL_ROOT_PASSWORD
+      start_period: 2s
+      interval: 5s
+      timeout: 5s
+      retries: 55
+    ports:
+      - 3306:3306
+    volumes:
+      - my-db:/var/lib/mysql
+
+volumes:
+  my-db:

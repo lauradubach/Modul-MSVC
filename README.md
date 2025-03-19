@@ -149,3 +149,7 @@ CRUD-Frameworks: Diese Frameworks ermöglichen es, Datenbankobjekte über eine g
 Anwendungsbeispiel: Eine einfache Aufgabenlisten-App verwendet CRUD, um Aufgaben hinzuzufügen, anzuzeigen, zu ändern und zu löschen.
 
 Nachteile und Grenzen: CRUD ist oft zu einfach, um komplexere Anforderungen abzubilden. Beispielsweise werden gelöschte oder aktualisierte Daten nicht automatisch historisiert, was in einigen Anwendungen problematisch sein kann. Diese Einschränkungen können durch zusätzliche Felder oder Tabellen zur Speicherung von Änderungen behoben werden.
+
+# Migrate Funktion
+
+![Migrate](image.png)
