@@ -1,26 +1,19 @@
-# File: Dockerfile.prod
+# Verwende ein noch schlankeres Basis-Image
+FROM python:3.10.10-alpine
 
-# Base python package
-FROM python:3.10.10-slim-buster
-
-# Working directory
+# Setze das Arbeitsverzeichnis
 WORKDIR /app
 
-# Copy the dependencies
-COPY requirements.txt requirements.txt
+# Kopiere und installiere Abhängigkeiten in einem Schritt (reduziert Layer)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir gunicorn
 
-# Install the dependencies
-RUN pip install -r requirements.txt
+# Kopiere den restlichen Code
+COPY . .
 
-# Install Gunicorn
-RUN pip install gunicorn
-
-# for flask web server
+# Exponiere den Port für Flask
 EXPOSE 5000
 
-# add files
-ADD . /app
-
-# This is the runtime command for the container
-# Add below line if not using docker-compose
-CMD gunicorn -b 0.0.0.0:5000 wsgi:app
+# Starte den Gunicorn-Server
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "wsgi:app"]
