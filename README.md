@@ -153,3 +153,9 @@ Nachteile und Grenzen: CRUD ist oft zu einfach, um komplexere Anforderungen abzu
 # Migrate Funktion
 
 ![Migrate](image.png)
+
+# Testing
+
+Test suite starten:
+`docker compose -f compose.test.yaml up --build`
+
