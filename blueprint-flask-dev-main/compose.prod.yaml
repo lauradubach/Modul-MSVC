@@ -11,7 +11,7 @@ services:
     environment:
       - DATABASE_URI=mysql+mysqlconnector://root:root@msvc-bp-prod-db:3306/msvc-prod
     ports:
-      - 5000:5000
+      - 80:5000
     depends_on:
       msvc-bp-prod-db:
         condition: service_healthy

@@ -217,3 +217,10 @@ CMD ["gunicorn", "-b", "0.0.0.0:5000", "wsgi:app"]
 
 Falls du noch mehr Platz sparen willst, kannst du in `requirements.txt` prüfen, ob unnötige Abhängigkeiten entfernt werden können.
 
+
+# EC2 Instanz
+
+IP Adress: 44.212.228.216
+
+SSH conection: ssh -i "~/.ssh/lab-key.pem" ec2-user@34.198.175.193
+
