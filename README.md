@@ -287,3 +287,130 @@ usermod -a -G docker ec2-user
 
 6. Test im Browser mit IP Adresse
 
+
+# CI/CD-Entwicklungsrichtlinien  
+
+CI/CD-Pipelines sind ein zentraler Bestandteil der Entwicklungs- und Bereitstellungsprozesse in GitLab. Sie automatisieren Aufgaben wie das Erstellen, Testen und Bereitstellen von Codeänderungen. Bei der Entwicklung von Funktionen, die mit Pipelines interagieren oder diese auslösen, müssen Sicherheits- und Betriebsaspekte berücksichtigt werden.  
+
+## Allgemeine Richtlinien  
+
+1. **Pipelines als Schreiboperationen betrachten**  
+   Das Auslösen einer Pipeline verändert den Systemzustand, z. B. durch Deployments oder Konfigurationsänderungen. Diese Operationen sollten mit derselben Vorsicht behandelt werden wie andere kritische Schreibvorgänge.  
+
+2. **Explizite Pipeline-Ausführung**  
+   Nutzer sollten sich bewusst sein, wenn eine Pipeline gestartet wird. Aktionen, die eine Pipeline auslösen, müssen transparent gestaltet sein.  
+
+3. **Isolierung und Sicherheit**  
+   Pipeline-Jobs laufen in einer Remote-Umgebung. Es muss sichergestellt werden, dass sie keine sensiblen Daten oder Systeme unbeabsichtigt preisgeben.  
+
+4. **Zusammenarbeit mit Sicherheitsteams**  
+   Die Application Security (AppSec)- und Verify-Teams sollten frühzeitig einbezogen werden, um Sicherheitsrisiken zu identifizieren und zu minimieren.  
+
+5. **Bestimmung des Pipeline-Akteurs**  
+   Es sollte klar sein, welcher Benutzer eine Pipeline startet. Unsichere Szenarien, in denen der Ersteller einer Pipeline nicht mit dem Autor der Codeänderungen übereinstimmt, sollten vermieden werden.  
+
+6. **Variabilität der Job-Ausführungsnutzer**  
+   Der Nutzer, der einen Job ausführt, kann sich ändern, z. B. bei manuellen Jobs oder Wiederholungen. Dies kann Auswirkungen auf Berechtigungen haben und muss berücksichtigt werden.  
+
+7. **Einschränkung des Operationsbereichs**  
+   Neue CI/CD-Endpunkte sollten möglichst auf einzelne Jobs oder Pipelines begrenzt werden, um Sicherheitsrisiken zu minimieren.  
+
+8. **Überwachung und Auditing**  
+   Alle pipeline-relevanten Aktionen sollten protokolliert werden, einschließlich Nutzerinformationen und Ereignisdetails.  
+
+## Architekturüberblick  
+
+Eine Pipeline kann durch verschiedene Ereignisse ausgelöst werden, z. B.:  
+- Git-Push  
+- API-Aufruf  
+- Manuelles Starten durch den Nutzer  
+- Merge-Request-Änderungen  
+- Geplante Pipelines  
+- Upstream-Projekt-Abonnements  
+
+Die **CreatePipelineService** verarbeitet diese Ereignisse und erstellt eine Pipeline basierend auf einer YAML-Konfiguration. Die **ProcessPipelineService** verwaltet anschließend den Ablauf der Jobs bis zur Fertigstellung oder einem Fehler.  
+
+Ein **Runner** führt die Jobs aus, kommuniziert mit GitLab über die Runner-API und meldet Status-Updates zurück.  
+
+## Job-Scheduling und Fehlerhandling  
+
+- Jobs durchlaufen mehrere Statusphasen: *erstellt → ausstehend → laufend → abgeschlossen/fehlgeschlagen*.  
+- Runner wählen Jobs basierend auf bestimmten Regeln aus, z. B. Projekt-, Gruppen- oder Instanzebene.  
+- Jobs können aus der Warteschlange entfernt werden, wenn kein Runner verfügbar ist oder wenn das Projekt sein CI/CD-Minuten-Kontingent überschritten hat.  
+
+## Definition von "Job" in GitLab CI/CD  
+
+- **Ci::Build** – Standard-Job für Runner  
+- **Ci::Bridge** – Erstellt eine untergeordnete Pipeline  
+- **GenericCommitStatus** – Externer CI/CD-Job (z. B. für Jenkins)  
+
+Die Begriffe "Job" und "Build" sollten konsistent verwendet werden, um Missverständnisse zu vermeiden.  
+
+## Fazit  
+
+Diese Richtlinien helfen Entwicklern, sichere und effiziente CI/CD-Integrationen zu erstellen. Eine klare Definition von Benutzerrechten, Sicherheitsmaßnahmen und Pipeline-Abläufen ist entscheidend für die Integrität des Systems.
+
+# Authentifizierungsdienste in verschiedenen Architekturen
+
+## **Was ist ein Authentifizierungsdienst?**  
+Authentifizierung dient dazu, die Identität eines Nutzers zu überprüfen, um ihm Zugang und Berechtigungen im System zu gewähren. In monolithischen Anwendungen erfolgt dies innerhalb der Anwendung selbst. In einer Microservice-Architektur muss Authentifizierung jedoch anders umgesetzt werden, da das System aus vielen separaten Diensten besteht.
+
+## **Authentifizierung in verschiedenen Architekturen**
+
+## **1. Monolithische Architektur**  
+In klassischen monolithischen Anwendungen wird die gesamte Authentifizierung innerhalb der Anwendung durchgeführt. Nach erfolgreicher Anmeldung wird eine Sitzung (Session) erstellt und auf dem Server gespeichert. Diese Session wird für alle weiteren Anfragen genutzt.
+
+## **2. ESB-Architektur (Enterprise Service Bus)**  
+ESB dient als Vermittler zwischen verschiedenen Diensten und ermöglicht deren Kommunikation. Da ESB eine Erweiterung der monolithischen Architektur ist, bleibt das Authentifizierungsverfahren im Wesentlichen unverändert.
+
+## **3. Microservice-Architektur**  
+In einer Microservice-Architektur gibt es mehrere Herausforderungen für die Authentifizierung, da Benutzerinformationen nicht zentral gespeichert werden können. Hier gibt es drei Hauptansätze:
+
+## **Authentifizierungsmethoden in Microservices**
+
+## **1. Authentifizierung in jedem einzelnen Microservice**  
+Jeder Microservice führt seine eigene Authentifizierung durch.  
+
+✅ **Vorteile:**  
+- Schnell zu implementieren  
+- Jeder Service bleibt unabhängig  
+
+❌ **Nachteile:**  
+- Hoher Wartungsaufwand durch duplizierten Code  
+- Sicherheitslogik muss mehrfach implementiert werden  
+- Schwierige Überwachung und Verwaltung  
+
+**Alternative Verbesserung:** Verwendung einer gemeinsamen Authentifizierungsbibliothek, die in jedem Microservice geladen wird. Dies reduziert doppelten Code, löst aber nicht alle Probleme.
+
+## **2. Zentrale Authentifizierung über einen separaten Authentifizierungsdienst**  
+Alle Authentifizierungsanfragen werden von einem zentralen Dienst verarbeitet.  
+
+✅ **Vorteile:**  
+- Trennung der Zuständigkeiten  
+- Einheitliche Authentifizierung für alle Dienste  
+
+❌ **Nachteile:**  
+- Single Point of Failure (fällt der Dienst aus, gibt es keine Authentifizierung mehr)  
+- Erhöhte Latenz, da jeder Microservice eine separate Anfrage stellen muss  
+
+## **3. Authentifizierung über ein API Gateway**  
+Ein API Gateway dient als zentrale Schnittstelle für alle Anfragen und übernimmt auch die Authentifizierung.  
+
+✅ **Vorteile:**  
+- Schutz der Microservices vor direkten Angriffen  
+- Einheitliche Authentifizierung für alle Dienste  
+- Reduzierte Latenz  
+
+❌ **Nachteile:**  
+- Single Point of Failure (wenn das Gateway kompromittiert wird, sind alle Microservices betroffen)  
+
+## **Fazit**
+
+Je nach Anforderungen gibt es unterschiedliche Authentifizierungslösungen:  
+✅ **Monolithische Anwendungen:** Session-basierte Authentifizierung innerhalb der Anwendung.  
+✅ **Microservices:** Drei Alternativen:
+1. **Jeder Microservice authentifiziert selbst** → Schnell, aber wartungsintensiv.  
+2. **Zentrale Authentifizierung über einen separaten Dienst** → Einheitlich, aber potenziell langsamer.  
+3. **Authentifizierung über ein API Gateway** → Flexibel und effizient, aber sicherheitskritisch.  
+
+Die beste Lösung hängt von den spezifischen Anforderungen eines Systems ab. 🚀
