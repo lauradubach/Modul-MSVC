@@ -220,7 +220,70 @@ Falls du noch mehr Platz sparen willst, kannst du in `requirements.txt` prüfen,
 
 # EC2 Instanz
 
-IP Adress: 44.212.228.216
+## Estellen:
 
-SSH conection: ssh -i "~/.ssh/lab-key.pem" ec2-user@34.198.175.193
+Betriebssystem: Amazon Linux als OS (Amazon Linux 2023 AMI)
+Instance Typ: t2.micro (ist ausreichend, eine t2.medium sollte auch für die Kursdauer gehen ($50))
+Schlüsselpaar: neues Schlüsselpaar erstellen
+guten Namen einfallen lassen (z.B.: msvc-key)
+ED25519 und .pem (SSH) auswählen. unbedingt den generierten .pem-File speichern. Wir brauchen ihn unbedingt für die Verbindung zu unserem Server
+Netzwerkeinstellungen: SSH, HTTP, HTTPS freischalten.
+alles andere Standardeinstellungen
+unter "erweiterte Details" - ganz unten bei "Benutzerdaten/User data" folgeendes Script einfügen:
+
+```sh
+#! /bin/sh
+yum update -y
+yum install git -y
+yum install docker -y
+service docker start
+usermod -a -G docker ec2-user
+chkconfig docker on
+# install docker compose
+wget https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)
+mv docker-compose-$(uname -s)-$(uname -m) /usr/libexec/docker/cli-plugins/docker-compose
+chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+systemctl enable docker.service --now
+usermod -a -G docker ec2-user
+```
+## IP erstellen
+
+1. EC2-Dashboard -> Elastic IP Adressen -> Elastic IP Adresse zuweisen
+2. Alle Einstellungen auf Standard -> Zuweisen klicken.
+3. In der Übersicht auf die neue IP-Adresse klicken -> "Elastic-IP-Adresse zuordnen" klicken
+4. bei Instance unsere gerade erstellte EC2 Instanz auswählen.
+5. auf "Zuordnen" klicken
+6. Die IP Adresse (z.B.: 34.198.175.193) irgendwo notieren (z.B.: OneNote) - wir werden sie noch öfter brauchen.
+
+## SSH erstellen
+
+1. kopiere den .pem File (Private Key z.b.: msvc-key.pem) in das .ssh-Verzeichnis im Home-Verzeichnis (.ssh im user ordner, lokal)
+
+2. Mit SSH Verbinden
+   - Pfad zum private key als -i Parameter
+   - user ist ec2-user
+   - Elastic IP Adresse von vorhin verwenden
+
+`ssh -i "~/.ssh/lab-key.pem" ec2-user@34.198.175.193`
+
+   - kurz mit yes bestätigen, dass der neue Host zur Liste der vertrauenswürdigen Server hinzugefügt wird.
+
+## Git Clone
+
+1. Git konfigurieren und neuen Public Key erstellen:
+
+    - ssh-keygen -t ed25519 -C [ihre@email.ch]
+    - git config --global user.email [ihre@email.ch]
+    - git config --global user.name [ihr gitlab_username]
+    - git config --global --list
+
+2. Auf der Ec2 Instanz den Key mit cat anzeigen lassen und rauskopieren
+   
+3. Im Github den neuen Public Key registrieren (In den Settings hinzufügen)
+
+4. In der Instanz das Git clonen `git clone git@gitlab.com:tbz-itcne23-msvc/blueprint-flask-prod.git` (pfad ist im Github im Repo unter code -> SSH zu finden)
+   
+5. starten mit `docker compose -f compose.prod.yaml up --build` (wichtig in den blueprint ordner wechseln)
+
+6. Test im Browser mit IP Adresse
 
